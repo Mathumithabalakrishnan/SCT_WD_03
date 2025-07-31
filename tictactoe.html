@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .mode-buttons {
+      margin-bottom: 20px;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: white;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid #444;
+    }
+    .cell:hover {
+      background-color: #f0f0f0;
+    }
+    .status {
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div class="mode-buttons">
+    <button onclick="setMode('player')">Play vs Player</button>
+    <button onclick="setMode('computer')">Play vs Computer</button>
+  </div>
+  <div class="status" id="status">Choose game mode</div>
+  <div class="board" id="board"></div>
+  <button onclick="resetGame()">Reset</button>
+
+  <script>
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+
+    let board = Array(9).fill(null);
+    let currentPlayer = "X";
+    let gameOver = false;
+    let gameMode = null; // "player" or "computer"
+
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6],
+    ];
+
+    function setMode(mode) {
+      gameMode = mode;
+      resetGame();
+      statusEl.textContent = `Mode: ${mode === "player" ? "2 Player" : "vs Computer"} | Player X's turn`;
+    }
+
+    function createBoard() {
+      boardEl.innerHTML = "";
+      board.forEach((cell, i) => {
+        const cellEl = document.createElement("div");
+        cellEl.className = "cell";
+        cellEl.textContent = cell;
+        cellEl.addEventListener("click", () => handleClick(i));
+        boardEl.appendChild(cellEl);
+      });
+    }
+
+    function handleClick(index) {
+      if (gameOver || board[index] || !gameMode) return;
+      board[index] = currentPlayer;
+      updateBoard();
+      if (checkWin()) {
+        statusEl.textContent = `Player ${currentPlayer} wins!`;
+        gameOver = true;
+        return;
+      }
+      if (board.every(Boolean)) {
+        statusEl.textContent = "It's a draw!";
+        gameOver = true;
+        return;
+      }
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusEl.textContent = `Player ${currentPlayer}'s turn`;
+
+      if (gameMode === "computer" && currentPlayer === "O" && !gameOver) {
+        setTimeout(computerMove, 500);
+      }
+    }
+
+    function updateBoard() {
+      document.querySelectorAll(".cell").forEach((cell, i) => {
+        cell.textContent = board[i];
+      });
+    }
+
+    function computerMove() {
+      const emptyIndices = board.map((v, i) => (v === null ? i : null)).filter(v => v !== null);
+      const move = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      handleClick(move);
+    }
+
+    function checkWin() {
+      return winPatterns.some(pattern => {
+        const [a, b, c] = pattern;
+        return board[a] && board[a] === board[b] && board[a] === board[c];
+      });
+    }
+
+    function resetGame() {
+      board = Array(9).fill(null);
+      currentPlayer = "X";
+      gameOver = false;
+      createBoard();
+      if (gameMode) {
+        statusEl.textContent = `Mode: ${gameMode === "player" ? "2 Player" : "vs Computer"} | Player ${currentPlayer}'s turn`;
+      } else {
+        statusEl.textContent = "Choose game mode";
+      }
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
